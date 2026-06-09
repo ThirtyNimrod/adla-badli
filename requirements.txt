@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+python-multipart
+jinja2
+pypandoc-binary
+svglib
+reportlab
+pillow

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Adla-Badli: A premium, modular file converter suite running on localhost. Convert Markdown to Word (DOCX), SVG to JPG, and more instantly.">
+    <title>Adla-Badli | Premium File Converter Suite</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- CSS stylesheet -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- Ambient background glows -->
+    <div class="ambient-glow glow-1" id="glow-1"></div>
+    <div class="ambient-glow glow-2" id="glow-2"></div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-container">
+                <div class="logo-icon" id="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 3L21 7L17 11" />
+                        <path d="M21 7H9" />
+                        <path d="M7 21L3 17L7 13" />
+                        <path d="M3 17H15" />
+                    </svg>
+                </div>
+                <h1 id="app-title">Adla-Badli</h1>
+            </div>
+            <p class="app-subtitle" id="app-subtitle">Premium, secure, and lightning-fast file converter suite running on your localhost.</p>
+        </header>
+
+        <!-- Main Card -->
+        <main class="main-card" id="main-card">
+            <!-- Dropzone Area -->
+            <div class="dropzone" id="file-dropzone">
+                <input type="file" id="file-input" class="file-input" hidden />
+                <div class="dropzone-content" id="dropzone-prompt">
+                    <div class="upload-illustration" id="upload-illustration">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="17 8 12 3 7 8" />
+                            <line x1="12" y1="3" x2="12" y2="15" />
+                        </svg>
+                    </div>
+                    <h2>Drag & drop your file here</h2>
+                    <p>or <span class="browse-link" id="browse-link">browse your files</span></p>
+                    <span class="file-limits">Supports .md, .svg</span>
+                </div>
+
+                <!-- Selected File Display -->
+                <div class="file-details hidden" id="file-details">
+                    <div class="file-icon-wrapper" id="file-icon-wrapper">
+                        <span class="file-badge" id="file-badge-ext">MD</span>
+                    </div>
+                    <div class="file-info">
+                        <h3 id="selected-file-name">document.md</h3>
+                        <p id="selected-file-size">14.2 KB</p>
+                    </div>
+                    <button class="remove-file-btn" id="remove-file-btn" title="Remove file">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Configuration & Actions -->
+            <div class="converter-controls hidden" id="converter-controls">
+                <div class="control-group">
+                    <label for="target-select" class="control-label" id="target-label">Convert To</label>
+                    <div class="select-wrapper">
+                        <select id="target-select" class="target-select" required>
+                            <option value="" disabled selected>Select output format...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" id="convert-btn">
+                    <span class="btn-text" id="convert-btn-text">Convert File</span>
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Loader State -->
+            <div class="loader-overlay hidden" id="loader-overlay">
+                <div class="spinner-container">
+                    <div class="glowing-spinner" id="glowing-spinner"></div>
+                </div>
+                <h3 id="loader-status">Converting...</h3>
+                <p id="loader-details">Applying styles and rendering structure.</p>
+            </div>
+
+            <!-- Success State -->
+            <div class="success-overlay hidden" id="success-overlay">
+                <div class="success-icon-wrapper">
+                    <svg class="checkmark" viewBox="0 0 52 52" id="success-checkmark">
+                        <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                        <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                    </svg>
+                </div>
+                <h2>Conversion Complete!</h2>
+                <p id="success-message">Your file has been converted successfully.</p>
+                <div class="success-actions">
+                    <a href="#" class="btn btn-success" id="download-link" download>
+                        <span>Download Output</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                    </a>
+                    <button class="btn btn-secondary" id="reset-btn">Convert Another File</button>
+                </div>
+            </div>
+
+            <!-- Error Notification -->
+            <div class="error-toast hidden" id="error-toast">
+                <div class="toast-icon" id="error-toast-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                </div>
+                <div class="toast-content" id="error-toast-content">
+                    <h4>Error</h4>
+                    <p id="error-toast-message">Conversion failed due to an unexpected error.</p>
+                </div>
+                <button class="toast-close" id="error-toast-close" title="Close Toast">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- JS script -->
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
