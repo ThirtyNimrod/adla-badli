@@ -1,4 +1,4 @@
-from typing import Dict, Tuple, Type, List
+from typing import Dict, Tuple, Type, List, Any
 from app.converters.base import BaseConverter
 from app.converters.md_to_docx import MarkdownToDocxConverter
 from app.converters.svg_to_jpg import SvgToJpgConverter
@@ -27,11 +27,15 @@ def get_converter(source_ext: str, target_ext: str) -> BaseConverter:
         raise ValueError(f"No converter registered for .{source_ext} to .{target_ext}")
     return converter_cls()
 
-def list_converters() -> List[Dict[str, str]]:
+def list_converters() -> List[Dict[str, Any]]:
     """
-    Lists all available conversions.
+    Lists all available conversions, including their option schemas if defined.
     """
     return [
-        {"source": key[0], "target": key[1]}
-        for key in _REGISTRY.keys()
+        {
+            "source": key[0],
+            "target": key[1],
+            "options_schema": cls.options_schema.model_json_schema() if cls.options_schema else None
+        }
+        for key, cls in _REGISTRY.items()
     ]

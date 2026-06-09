@@ -1,5 +1,7 @@
 import pypandoc
 from pathlib import Path
+from typing import Optional
+from pydantic import BaseModel
 from app.converters.base import BaseConverter
 
 class MarkdownToDocxConverter(BaseConverter):
@@ -11,7 +13,7 @@ class MarkdownToDocxConverter(BaseConverter):
     def target_extension(self) -> str:
         return "docx"
 
-    def convert(self, input_path: Path, output_path: Path, **kwargs) -> None:
+    def convert(self, input_path: Path, output_path: Path, options: Optional[BaseModel] = None) -> None:
         if not input_path.exists():
             raise FileNotFoundError(f"Input file not found: {input_path}")
         

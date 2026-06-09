@@ -1,35 +1,22 @@
 import os
-import shutil
-import uuid
 from pathlib import Path
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, BackgroundTasks, Request
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from starlette.requests import Request
+from pydantic import ValidationError
 
 from app.converters import get_converter, list_converters
+from app.workspace import ConversionWorkspace
 
 app = FastAPI(title="Adla-Badli File Converter Suite")
 
 # Directories configuration
 BASE_DIR = Path(__file__).resolve().parent.parent
-TEMP_DIR = BASE_DIR / "temp_uploads"
-TEMP_DIR.mkdir(exist_ok=True)
 
 # Ensure static and templates exist, and mount static path
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "app" / "static")), name="static")
 templates = Jinja2Templates(directory=str(BASE_DIR / "app" / "templates"))
-
-def cleanup_files(*filepaths: Path):
-    """Safely cleans up temporary files after sending the HTTP response."""
-    for path in filepaths:
-        try:
-            if path.exists():
-                path.unlink()
-        except Exception as e:
-            # Silently log errors in background cleanup
-            print(f"Error performing background cleanup for {path}: {e}")
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
@@ -46,10 +33,10 @@ async def get_available_converters():
 
 @app.post("/api/convert")
 async def convert_file(
+    request: Request,
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     target_ext: str = Form(...),
-    bg_color: str = Form(default="white"),
 ):
     """
     Accepts a file upload, detects its extension, resolves the correct converter,
@@ -73,39 +60,41 @@ async def convert_file(
             detail=f"Unsupported conversion path from .{source_ext} to .{target_ext}."
         )
     
-    # Setup unique temporary paths to prevent file collisions during concurrent requests
-    session_id = uuid.uuid4().hex
-    input_filename = f"{session_id}_input.{source_ext}"
-    output_filename = f"{session_id}_output.{target_ext}"
+    # Parse dynamic option parameters from form data
+    form_data = await request.form()
+    raw_options = {k: v for k, v in form_data.items() if k not in ("file", "target_ext")}
     
-    input_path = TEMP_DIR / input_filename
-    output_path = TEMP_DIR / output_filename
-    
-    # Save upload stream
-    try:
-        with input_path.open("wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-    except Exception as e:
-        cleanup_files(input_path)
-        raise HTTPException(status_code=500, detail=f"Failed to write uploaded file to disk: {e}")
+    validated_options = None
+    if converter.options_schema:
+        try:
+            validated_options = converter.options_schema.model_validate(raw_options)
+        except ValidationError as e:
+            raise HTTPException(status_code=422, detail=e.errors())
+
+    # Instantiate the workspace to encapsulate file lifetime
+    with ConversionWorkspace(source_ext, target_ext) as workspace:
+        # Write the upload stream to temporary files inside workspace
+        try:
+            input_path, output_path = workspace.write_input_file(file)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to write uploaded file to disk: {e}")
+            
+        # Execute conversion
+        try:
+            converter.convert(input_path, output_path, options=validated_options)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Conversion error: {str(e)}")
+            
+        # Target download name
+        original_stem = Path(original_filename).stem
+        download_filename = f"{original_stem}.{target_ext}"
         
-    # Execute conversion
-    try:
-        print(f"BG color received: {bg_color}")
-        converter.convert(input_path, output_path, bg_color=bg_color)
-    except Exception as e:
-        cleanup_files(input_path, output_path)
-        raise HTTPException(status_code=500, detail=f"Conversion error: {str(e)}")
+        # Defer cleanup to FastAPI background tasks and release workspace context ownership
+        background_tasks.add_task(workspace.get_cleanup_task())
+        workspace.release()
         
-    # Target download name
-    original_stem = Path(original_filename).stem
-    download_filename = f"{original_stem}.{target_ext}"
-    
-    # Register background task to clean up files AFTER sending the FileResponse
-    background_tasks.add_task(cleanup_files, input_path, output_path)
-    
-    return FileResponse(
-        path=output_path,
-        filename=download_filename,
-        media_type="application/octet-stream"
-    )
+        return FileResponse(
+            path=output_path,
+            filename=download_filename,
+            media_type="application/octet-stream"
+        )

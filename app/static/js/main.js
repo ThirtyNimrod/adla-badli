@@ -25,8 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const errorToastMsg = document.getElementById("error-toast-message");
     const errorToastClose = document.getElementById("error-toast-close");
 
-    const svgOptionsGroup = document.getElementById("svg-options-group");
-    const bgColorSelect = document.getElementById("bg-color-select");
+    const dynamicOptionsContainer = document.getElementById("dynamic-options-container");
 
     let selectedFile = null;
 
@@ -106,13 +105,6 @@ document.addEventListener("DOMContentLoaded", () => {
         dropzonePrompt.classList.add("hidden");
         fileDetails.classList.remove("hidden");
 
-        // Show SVG specific options if applicable
-        if (ext === "svg") {
-            svgOptionsGroup.classList.remove("hidden");
-        } else {
-            svgOptionsGroup.classList.add("hidden");
-        }
-
         // Filter and show targets options
         populateTargets(ext);
     }
@@ -146,6 +138,83 @@ document.addEventListener("DOMContentLoaded", () => {
         // Auto-select option if there's only one output candidate
         if (targets.length === 1) {
             targetSelect.value = targets[0];
+            renderDynamicOptions(sourceExt, targets[0]);
+        } else {
+            dynamicOptionsContainer.innerHTML = "";
+        }
+    }
+
+    targetSelect.addEventListener("change", () => {
+        if (selectedFile) {
+            const ext = selectedFile.name.split('.').pop().toLowerCase();
+            renderDynamicOptions(ext, targetSelect.value);
+        }
+    });
+
+    function renderDynamicOptions(sourceExt, targetExt) {
+        dynamicOptionsContainer.innerHTML = "";
+        
+        const converter = supportedConversions.find(
+            conv => conv.source.toLowerCase() === sourceExt.toLowerCase() && 
+                    conv.target.toLowerCase() === targetExt.toLowerCase()
+        );
+        
+        if (!converter || !converter.options_schema || !converter.options_schema.properties) {
+            return;
+        }
+        
+        const properties = converter.options_schema.properties;
+        
+        for (const [name, prop] of Object.entries(properties)) {
+            const controlGroup = document.createElement("div");
+            controlGroup.className = "control-group";
+            
+            const label = document.createElement("label");
+            label.className = "control-label";
+            label.setAttribute("for", `option-${name}`);
+            label.textContent = prop.title || name;
+            controlGroup.appendChild(label);
+            
+            if (prop.enum) {
+                const selectWrapper = document.createElement("div");
+                selectWrapper.className = "select-wrapper";
+                
+                const select = document.createElement("select");
+                select.id = `option-${name}`;
+                select.name = name;
+                select.className = "target-select";
+                
+                prop.enum.forEach(val => {
+                    const opt = document.createElement("option");
+                    opt.value = val;
+                    opt.textContent = val.charAt(0).toUpperCase() + val.slice(1);
+                    if (val === prop.default) {
+                        opt.selected = true;
+                    }
+                    select.appendChild(opt);
+                });
+                
+                selectWrapper.appendChild(select);
+                controlGroup.appendChild(selectWrapper);
+            } else if (prop.type === "boolean") {
+                const checkbox = document.createElement("input");
+                checkbox.id = `option-${name}`;
+                checkbox.type = "checkbox";
+                checkbox.name = name;
+                checkbox.className = "option-checkbox";
+                checkbox.checked = prop.default || false;
+                controlGroup.appendChild(checkbox);
+            } else {
+                const input = document.createElement("input");
+                input.id = `option-${name}`;
+                input.name = name;
+                input.className = "option-input";
+                input.type = prop.type === "integer" || prop.type === "number" ? "number" : "text";
+                input.value = prop.default !== undefined ? prop.default : "";
+                controlGroup.appendChild(input);
+            }
+            
+            dynamicOptionsContainer.appendChild(controlGroup);
         }
     }
 
@@ -169,10 +238,15 @@ document.addEventListener("DOMContentLoaded", () => {
         formData.append("file", selectedFile);
         formData.append("target_ext", targetExt);
         
-        const ext = selectedFile.name.split('.').pop().toLowerCase();
-        if (ext === "svg") {
-            formData.append("bg_color", bgColorSelect.value);
-        }
+        // Dynamically capture parameters from dynamic options container
+        const inputs = dynamicOptionsContainer.querySelectorAll("input, select");
+        inputs.forEach(input => {
+            if (input.type === "checkbox") {
+                formData.append(input.name, input.checked ? "true" : "false");
+            } else {
+                formData.append(input.name, input.value);
+            }
+        });
 
         try {
             const response = await fetch("/api/convert", {
@@ -217,8 +291,7 @@ document.addEventListener("DOMContentLoaded", () => {
         fileDetails.classList.add("hidden");
         controls.classList.add("hidden");
         successOverlay.classList.add("hidden");
-        svgOptionsGroup.classList.add("hidden");
-        bgColorSelect.value = "white";
+        dynamicOptionsContainer.innerHTML = "";
         targetSelect.innerHTML = '<option value="" disabled selected>Select output format…</option>';
         hideError();
     }

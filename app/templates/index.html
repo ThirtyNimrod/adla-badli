@@ -81,17 +81,8 @@
                     </div>
                 </div>
 
-                <!-- Custom SVG options (Only shown for SVG uploads) -->
-                <div class="control-group hidden" id="svg-options-group">
-                    <label for="bg-color-select" class="control-label" id="bg-color-label">Background Color</label>
-                    <div class="select-wrapper">
-                        <select id="bg-color-select" class="target-select">
-                            <option value="white">White (Default Light)</option>
-                            <option value="dark">Dark Slate (App Theme)</option>
-                            <option value="black">Pure Black</option>
-                        </select>
-                    </div>
-                </div>
+                <!-- Dynamic options container (populated dynamically by JS) -->
+                <div id="dynamic-options-container"></div>
 
                 <button class="btn btn-primary" id="convert-btn">
                     <span class="btn-text" id="convert-btn-text">Convert File</span>

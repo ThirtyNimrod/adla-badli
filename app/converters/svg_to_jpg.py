@@ -1,10 +1,18 @@
 from pathlib import Path
 import io
 import xml.etree.ElementTree as ET
+from typing import Literal, Optional
+from pydantic import BaseModel, Field
 from PIL import Image
 from svglib.svglib import svg2rlg
 from reportlab.graphics import renderPM
 from app.converters.base import BaseConverter
+
+class SvgToJpgOptions(BaseModel):
+    bg_color: Literal["white", "dark", "black"] = Field(
+        default="white",
+        description="The background canvas color for transparent SVG components."
+    )
 
 class SvgToJpgConverter(BaseConverter):
     @property
@@ -15,12 +23,24 @@ class SvgToJpgConverter(BaseConverter):
     def target_extension(self) -> str:
         return "jpg"
 
-    def convert(self, input_path: Path, output_path: Path, **kwargs) -> None:
+    options_schema = SvgToJpgOptions
+
+    def convert(self, input_path: Path, output_path: Path, options: Optional[BaseModel] = None) -> None:
         if not input_path.exists():
             raise FileNotFoundError(f"Input file not found: {input_path}")
         
+        # Load options and resolve defaults
+        opts = options
+        if opts is None:
+            opts = SvgToJpgOptions()
+        elif not isinstance(opts, SvgToJpgOptions):
+            if isinstance(opts, dict):
+                opts = SvgToJpgOptions.model_validate(opts)
+            else:
+                opts = SvgToJpgOptions.model_validate(opts.model_dump())
+        
         # Determine background color
-        bg_option = kwargs.get("bg_color", "white").lower()
+        bg_option = opts.bg_color.lower()
         if bg_option == "dark":
             bg_color = (11, 15, 25)  # Premium Slate (#0b0f19)
             hex_color = "#0b0f19"

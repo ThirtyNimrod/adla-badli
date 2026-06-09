@@ -11,7 +11,6 @@ temp_uploads/
 *.docx
 *.jpg
 *.svg
-*.md
 !README.md
 .agents
 
