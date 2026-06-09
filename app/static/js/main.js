@@ -25,6 +25,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const errorToastMsg = document.getElementById("error-toast-message");
     const errorToastClose = document.getElementById("error-toast-close");
 
+    const svgOptionsGroup = document.getElementById("svg-options-group");
+    const bgColorSelect = document.getElementById("bg-color-select");
+
     let selectedFile = null;
 
     // 1. Fetch available converters dynamically from backend
@@ -73,6 +76,17 @@ document.addEventListener("DOMContentLoaded", () => {
         fileInput.click();
     });
 
+    // Keyboard navigation: Enter/Space triggers upload
+    dropzone.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+            if (e.target.closest("#remove-file-btn") || e.target.closest("#file-details")) {
+                return;
+            }
+            e.preventDefault();
+            fileInput.click();
+        }
+    });
+
     fileInput.addEventListener("change", (e) => {
         if (fileInput.files.length > 0) {
             handleFileSelect(fileInput.files[0]);
@@ -92,6 +106,13 @@ document.addEventListener("DOMContentLoaded", () => {
         dropzonePrompt.classList.add("hidden");
         fileDetails.classList.remove("hidden");
 
+        // Show SVG specific options if applicable
+        if (ext === "svg") {
+            svgOptionsGroup.classList.remove("hidden");
+        } else {
+            svgOptionsGroup.classList.add("hidden");
+        }
+
         // Filter and show targets options
         populateTargets(ext);
     }
@@ -99,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 4. Update Target Output Formats select options
     function populateTargets(sourceExt) {
         // Clear previous options
-        targetSelect.innerHTML = '<option value="" disabled selected>Select output format...</option>';
+        targetSelect.innerHTML = '<option value="" disabled selected>Select output format…</option>';
         
         // Match possible output targets for the selected file type
         const targets = supportedConversions
@@ -147,6 +168,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const formData = new FormData();
         formData.append("file", selectedFile);
         formData.append("target_ext", targetExt);
+        
+        const ext = selectedFile.name.split('.').pop().toLowerCase();
+        if (ext === "svg") {
+            formData.append("bg_color", bgColorSelect.value);
+        }
 
         try {
             const response = await fetch("/api/convert", {
@@ -191,7 +217,9 @@ document.addEventListener("DOMContentLoaded", () => {
         fileDetails.classList.add("hidden");
         controls.classList.add("hidden");
         successOverlay.classList.add("hidden");
-        targetSelect.innerHTML = '<option value="" disabled selected>Select output format...</option>';
+        svgOptionsGroup.classList.add("hidden");
+        bgColorSelect.value = "white";
+        targetSelect.innerHTML = '<option value="" disabled selected>Select output format…</option>';
         hideError();
     }
 

@@ -1,0 +1,31 @@
+{
+  "name": "adla-badli",
+  "version": "1.0.0",
+  "description": "FastAPI-powered file conversion tool.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ThirtyNimrod/adla-badli.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ThirtyNimrod/adla-badli/issues"
+  },
+  "homepage": "https://github.com/ThirtyNimrod/adla-badli#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^25.9.2"
+  }
+}

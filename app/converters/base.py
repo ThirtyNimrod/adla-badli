@@ -15,6 +15,6 @@ class BaseConverter(ABC):
         pass
 
     @abstractmethod
-    def convert(self, input_path: Path, output_path: Path) -> None:
+    def convert(self, input_path: Path, output_path: Path, **kwargs) -> None:
         """Performs the conversion. Raises exceptions on failure."""
         pass

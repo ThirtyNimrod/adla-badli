@@ -34,7 +34,7 @@ def test_svg_to_jpg():
         output_path.unlink()
         
     converter = SvgToJpgConverter()
-    converter.convert(input_path, output_path)
+    converter.convert(input_path, output_path, bg_color="dark")
     
     if output_path.exists():
         print("SUCCESS: sample.jpg created successfully!")

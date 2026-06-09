@@ -11,7 +11,7 @@ class MarkdownToDocxConverter(BaseConverter):
     def target_extension(self) -> str:
         return "docx"
 
-    def convert(self, input_path: Path, output_path: Path) -> None:
+    def convert(self, input_path: Path, output_path: Path, **kwargs) -> None:
         if not input_path.exists():
             raise FileNotFoundError(f"Input file not found: {input_path}")
         

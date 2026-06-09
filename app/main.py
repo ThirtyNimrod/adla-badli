@@ -49,6 +49,7 @@ async def convert_file(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     target_ext: str = Form(...),
+    bg_color: str = Form(default="white"),
 ):
     """
     Accepts a file upload, detects its extension, resolves the correct converter,
@@ -90,7 +91,8 @@ async def convert_file(
         
     # Execute conversion
     try:
-        converter.convert(input_path, output_path)
+        print(f"BG color received: {bg_color}")
+        converter.convert(input_path, output_path, bg_color=bg_color)
     except Exception as e:
         cleanup_files(input_path, output_path)
         raise HTTPException(status_code=500, detail=f"Conversion error: {str(e)}")
