@@ -58,9 +58,16 @@ Validates the temporary file lifecycle (creation, release, cleanup):
 ```
 
 ### Playwright E2E Tests
-Requires Node.js. Uvicorn starts automatically before each test run:
+
+Requires Node.js. Install Node dependencies and the Playwright browser binaries, then run the tests (Uvicorn starts automatically before each test run):
 ```bash
+# Install dependencies
 npm install
+
+# Install Playwright browser binaries
+npx playwright install
+
+# Run E2E tests
 npm run test:e2e            # headless
 npm run test:e2e:ui         # interactive runner
 npm run test:e2e:debug      # debug mode

@@ -11,6 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400;1,500&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
     <!-- CSS stylesheet -->
     <link rel="stylesheet" href="/static/css/style.css">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/static/favicon.png">
 </head>
 <body>
     <!-- Ambient background glows -->
@@ -120,8 +122,29 @@
                             <line x1="12" y1="15" x2="12" y2="3" />
                         </svg>
                     </a>
+                    <button class="btn btn-secondary" id="preview-btn">
+                        <span>Preview File</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
+                    </button>
                     <button class="btn btn-secondary" id="reset-btn">Convert Another File</button>
                 </div>
+            </div>
+
+            <!-- Preview Section -->
+            <div class="preview-container hidden" id="preview-container">
+                <div class="preview-header">
+                    <h3 class="preview-title">Document Preview</h3>
+                    <button class="preview-close-btn" id="preview-close-btn" aria-label="Close Preview" title="Close Preview">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="preview-content" id="preview-content"></div>
             </div>
 
             <!-- Error Notification -->

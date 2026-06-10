@@ -18,6 +18,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "app" / "static")), name="static")
 templates = Jinja2Templates(directory=str(BASE_DIR / "app" / "templates"))
 
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    """Serves the favicon icon to prevent 404 log clutter."""
+    return FileResponse(BASE_DIR / "app" / "static" / "favicon.png")
+
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
     """Serves the main single page app dashboard."""

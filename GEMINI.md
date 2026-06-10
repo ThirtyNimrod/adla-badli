@@ -191,5 +191,5 @@ npm run test:e2e:debug
 - `app/templates/index.html` — Frontend markup (single file)
 - `app/static/js/main.js` — All client-side logic
 - `tests/test_converters.py` — Converter unit tests
-- `docs/architecture.md` — Extended architecture diagrams and details
-- `docs/troubleshooting.md` — Resolution guide for port, dependency, and rendering errors
+- `docs/core/architecture.md` — Extended architecture diagrams and details
+- `docs/core/troubleshooting.md` — Resolution guide for port, dependency, and rendering errors

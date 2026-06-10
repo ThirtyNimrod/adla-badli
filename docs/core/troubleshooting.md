@@ -112,6 +112,17 @@ Or tests time out because the local server cannot start.
    ```
 3. If the tests fail because of port conflicts, make sure port `8000` is free before running the tests (see [Section 1](#1-port-8000-already-in-use-address-already-in-use--access-forbidden)). Playwright starts its own instance of the Uvicorn server on port `8000` via its `webServer` config. If you already have Uvicorn running in another terminal, you should stop it before running `npm run test:e2e`.
 
+* **Windows Execution Policy Blocks:**
+  If you run `npm run test:e2e` in PowerShell and get a security error saying `npm.ps1 cannot be loaded because running scripts is disabled on this system`, either:
+  - Run the command through standard Command Prompt (`cmd`):
+    ```cmd
+    cmd /c "npm run test:e2e"
+    ```
+  - Or temporarily bypass the policy in PowerShell:
+    ```powershell
+    powershell -ExecutionPolicy Bypass -Command "npm run test:e2e"
+    ```
+
 ---
 
 ## 4. xhtml2pdf & ReportLab Layout/Font Issues

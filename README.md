@@ -21,9 +21,11 @@ Converters are organized into three groups under `app/converters/`:
 
 ## Documentation
 
-- [Quick Start Guide](docs/quick_start.md)
-- [Architecture Documentation](docs/architecture.md)
-- [Troubleshooting Guide](docs/troubleshooting.md)
+See the [Documentation Index](docs/README.md) for details.
+
+- [Quick Start Guide](docs/core/quick_start.md)
+- [Architecture Documentation](docs/core/architecture.md)
+- [Troubleshooting Guide](docs/core/troubleshooting.md)
 
 ## Installation Quick Summary
 
