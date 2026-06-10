@@ -120,7 +120,8 @@ document.addEventListener("DOMContentLoaded", () => {
             .map(conv => conv.target);
 
         if (targets.length === 0) {
-            showError(`Unsupported file type: .${sourceExt}. Currently, we only support .md and .svg conversions.`);
+            const supported = [...new Set(supportedConversions.map(conv => conv.source))].sort().join(", .");
+            showError(`Unsupported file type: .${sourceExt}. Supported source formats: .${supported}`);
             resetState();
             return;
         }

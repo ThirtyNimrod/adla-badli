@@ -8,6 +8,8 @@ env/
 .vscode/
 .idea/
 temp_uploads/
+tests/output/
+tests/fixtures/
 *.docx
 *.jpg
 *.svg

@@ -1,10 +1,10 @@
 # GEMINI.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code), Gemini CLI (ai.google/gemini/cli), and Antigravity (antigravity.ai) when working with code in this repository.
 
 ## Project Overview
 
-**Adla-Badli** is a full-stack file conversion suite built on FastAPI. It provides a modern web interface for converting files between multiple formats (currently Markdown→DOCX and SVG→JPG). The application runs entirely on localhost and handles all conversions locally with no external cloud dependencies.
+**Adla-Badli** is a full-stack file conversion suite built on FastAPI. It provides a modern web interface for converting files across 21 different paths between various formats (Markdown, text, HTML, CSV, JSON, and SVG). The application runs entirely on localhost and handles all conversions locally with no external cloud dependencies.
 
 **Key Characteristics:**
 - FastAPI backend with async/await patterns
@@ -67,8 +67,9 @@ npm run test:e2e:debug
 **`app/converters/`** — Converter module architecture
 - **`base.py`**: Abstract `BaseConverter` class defining the interface (`source_extension`, `target_extension`, `convert()`)
 - **`__init__.py`**: Registry system mapping `(source_ext, target_ext)` tuples to converter classes; provides `get_converter()` and `list_converters()`
-- **`md_to_docx.py`**: Markdown→DOCX conversion using Pandoc via pypandoc
-- **`svg_to_jpg.py`**: SVG→JPG conversion using svglib + ReportLab + Pillow with support for custom background colors (white/dark/black)
+- **`text_converters/`**: Conversions for text-based formats (md, txt, html) to docx, pdf, html, and txt using Pandoc and xhtml2pdf.
+- **`data_converters/`**: Conversions for structured data formats (csv, json) to xlsx, docx, pdf, csv, and json using pandas, openpyxl, python-docx, and ReportLab.
+- **`image_converters/`**: Conversions for vector images (svg) to jpg, png, and pdf using svglib, ReportLab, and Pillow.
 
 **`app/workspace.py`** — Temporary file lifecycle management
 - `ConversionWorkspace` context manager handles creation/cleanup of temp directories
@@ -100,8 +101,8 @@ npm run test:e2e:debug
 ## Design Patterns & Conventions
 
 ### Converter System
-- **Registry Pattern**: All converters must inherit `BaseConverter` and implement `source_extension`, `target_extension`, `convert()`. Register via `register_converter(MyConverter)` in `__init__.py`.
-- **To add a new converter**: Create a class in `app/converters/new_format.py`, inherit `BaseConverter`, implement abstract properties/methods, import and register in `__init__.py`.
+- **Registry Pattern**: All converters must inherit `BaseConverter` and implement `source_extension`, `target_extension`, `convert()`. They are grouped under `text_converters/`, `data_converters/`, or `image_converters/` and registered by appending them to the respective exporter list in their group's `__init__.py`.
+- **To add a new converter**: Create a class in the corresponding converter group subfolder (e.g., `app/converters/text_converters/format_to_format.py`), inherit `BaseConverter`, implement abstract properties/methods, and register it by adding it to the group's converter list in its `__init__.py`.
 
 ### Temporary File Management
 - Use `ConversionWorkspace` context manager to encapsulate file lifetime
@@ -133,7 +134,7 @@ npm run test:e2e:debug
 
 ## Adding a New File Format Conversion
 
-1. **Create converter class** in `app/converters/format_to_format.py`:
+1. **Create converter class** in the appropriate subdirectory (e.g., `app/converters/text_converters/format_to_format.py`):
    ```python
    from app.converters.base import BaseConverter
    
@@ -151,15 +152,16 @@ npm run test:e2e:debug
            pass
    ```
 
-2. **Register** in `app/converters/__init__.py`:
+2. **Register** in the corresponding group `__init__.py` file (e.g., `app/converters/text_converters/__init__.py`):
    ```python
-   from app.converters.format_to_format import FormatXToFormatYConverter
-   register_converter(FormatXToFormatYConverter)
+   from app.converters.text_converters.format_to_format import FormatXToFormatYConverter
+   
+   # Add FormatXToFormatYConverter to the TEXT_CONVERTERS list
    ```
 
 3. **Update frontend** (`app/templates/index.html`) to show the new format in the target select dropdown (dynamically populated from `/api/converters` API, so UI updates automatically).
 
-4. **Test** via Python tests and Playwright E2E tests.
+4. **Test** via Python tests (`tests/test_converters.py`) and Playwright E2E tests.
 
 ## Dependencies
 
@@ -168,10 +170,14 @@ npm run test:e2e:debug
 - `uvicorn` — ASGI server
 - `python-multipart` — File upload handling
 - `jinja2` — HTML templating
-- `pypandoc-binary` — Markdown to DOCX conversion (uses Pandoc)
+- `pypandoc-binary` — Markdown to DOCX/HTML/TXT conversion (uses Pandoc)
+- `xhtml2pdf` — HTML/Markdown to PDF rendering pipeline
 - `svglib` — SVG parsing for rendering
-- `reportlab` — Graphics rendering engine
-- `pillow` — Image processing (JPEG output)
+- `reportlab` — Graphics rendering engine (used for SVG and PDF rendering)
+- `pillow` — Image processing (JPEG/PNG output compositing)
+- `pandas` — CSV and JSON data loading and normalization
+- `openpyxl` — Excel/XLSX generation for data conversions
+- `python-docx` — DOCX table generation for data conversions
 
 **Node.js (`package.json`)**:
 - `@playwright/test` — E2E testing framework
@@ -186,3 +192,4 @@ npm run test:e2e:debug
 - `app/static/js/main.js` — All client-side logic
 - `tests/test_converters.py` — Converter unit tests
 - `docs/architecture.md` — Extended architecture diagrams and details
+- `docs/troubleshooting.md` — Resolution guide for port, dependency, and rendering errors
