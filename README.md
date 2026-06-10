@@ -55,3 +55,10 @@ uvicorn app.main:app --reload
 .venv\Scripts\python tests/test_converters.py
 .venv\Scripts\python tests/test_workspace.py
 ```
+
+## Contributors & AI Collaborators
+
+Special thanks to my AI pair programming partners who helped design, build, and troubleshoot this suite:
+
+- **Claude Code** (Anthropic) — Assisted with architecture refactoring, E2E test environments, and frontend polish.
+- **Gemini CLI / Antigravity** (Google DeepMind) — Assisted with file preview features, troubleshooting system dependencies, and guide index setups.
