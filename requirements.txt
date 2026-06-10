@@ -1,0 +1,19 @@
+# Web framework
+fastapi
+uvicorn
+python-multipart
+jinja2
+
+# Text converters (md, txt, html)
+pypandoc-binary
+xhtml2pdf
+
+# Image converters (svg)
+svglib
+reportlab
+pillow
+
+# Data converters (csv, json)
+pandas
+openpyxl
+python-docx
