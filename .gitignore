@@ -9,7 +9,6 @@ env/
 .idea/
 temp_uploads/
 tests/output/
-tests/fixtures/
 *.docx
 *.jpg
 *.svg
@@ -23,3 +22,7 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# Do not ignore test fixtures
+!tests/fixtures/
+!tests/fixtures/**
