@@ -9,3 +9,17 @@ class PdfOptions(BaseModel):
         title="Page Size",
         description="Paper size for the rendered PDF document.",
     )
+    font_size: int = Field(
+        default=11,
+        title="Font Size (pt)",
+        description="Base font size in points.",
+        ge=6,
+        le=36,
+    )
+    margin: float = Field(
+        default=2.0,
+        title="Margin (cm)",
+        description="Page margin in centimeters.",
+        ge=0.5,
+        le=10.0,
+    )

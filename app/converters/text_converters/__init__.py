@@ -9,6 +9,8 @@ from app.converters.text_converters.txt_to_html import TxtToHtmlConverter
 from app.converters.text_converters.html_to_pdf import HtmlToPdfConverter
 from app.converters.text_converters.html_to_docx import HtmlToDocxConverter
 from app.converters.text_converters.html_to_txt import HtmlToTxtConverter
+from app.converters.text_converters.docx_to_txt import DocxToTxtConverter
+from app.converters.text_converters.pdf_to_txt import PdfToTxtConverter
 
 TEXT_CONVERTERS = [
     MarkdownToDocxConverter,
@@ -21,4 +23,6 @@ TEXT_CONVERTERS = [
     HtmlToPdfConverter,
     HtmlToDocxConverter,
     HtmlToTxtConverter,
+    DocxToTxtConverter,
+    PdfToTxtConverter,
 ]

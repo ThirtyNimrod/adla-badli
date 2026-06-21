@@ -29,4 +29,11 @@ class HtmlToPdfConverter(BaseConverter):
             raise FileNotFoundError(f"Input file not found: {input_path}")
         opts = options if isinstance(options, PdfOptions) else PdfOptions()
         html_body = read_source_as_html(input_path, "html")
-        html_to_pdf_file(html_body, output_path, page_size=opts.page_size, title=input_path.stem)
+        html_to_pdf_file(
+            html_body, 
+            output_path, 
+            page_size=opts.page_size, 
+            title=input_path.stem, 
+            font_size=opts.font_size, 
+            margin=opts.margin
+        )

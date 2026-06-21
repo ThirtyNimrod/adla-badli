@@ -45,9 +45,38 @@ hr { border: none; border-top: 1px solid #D8CFC4; }
 """
 
 
-def _pdf_page_css(page_size: PageSize) -> str:
+def _pdf_page_css(page_size: PageSize, font_size: int = 11, margin: float = 2.0) -> str:
     size = "A4" if page_size == "a4" else "letter"
-    return f"@page {{ size: {size}; margin: 2cm; }}\n" + _DOCUMENT_CSS
+    document_css = f"""
+body {{
+    font-family: Georgia, 'Times New Roman', serif;
+    color: #2E2018;
+    line-height: 1.6;
+    font-size: {font_size}pt;
+}}
+h1, h2, h3, h4 {{ color: #2E2018; line-height: 1.25; }}
+h1 {{ font-size: {int(font_size * 2)}pt; }}
+h2 {{ font-size: {int(font_size * 1.45)}pt; }}
+h3 {{ font-size: {int(font_size * 1.18)}pt; }}
+code, pre {{
+    font-family: 'Courier New', monospace;
+    font-size: {int(font_size * 0.86)}pt;
+    background-color: #F5F1EA;
+}}
+pre {{ padding: 8px; }}
+blockquote {{
+    border-left: 3px solid #C4714A;
+    margin-left: 0;
+    padding-left: 14px;
+    color: #6B5A50;
+}}
+table {{ border-collapse: collapse; width: 100%; }}
+th, td {{ border: 1px solid #D8CFC4; padding: 6px 8px; text-align: left; }}
+th {{ background-color: #F5F1EA; }}
+a {{ color: #C4714A; }}
+hr {{ border: none; border-top: 1px solid #D8CFC4; }}
+"""
+    return f"@page {{ size: {size}; margin: {margin}cm; }}\n" + document_css
 
 
 def read_source_as_html(input_path: Path, source_format: str) -> str:
@@ -60,11 +89,18 @@ def read_source_as_html(input_path: Path, source_format: str) -> str:
     return pypandoc.convert_file(str(input_path), to="html", format=source_format)
 
 
-def html_to_pdf_file(html_body: str, output_path: Path, page_size: PageSize = "a4", title: str = "Document") -> None:
+def html_to_pdf_file(
+    html_body: str, 
+    output_path: Path, 
+    page_size: PageSize = "a4", 
+    title: str = "Document",
+    font_size: int = 11,
+    margin: float = 2.0
+) -> None:
     """Renders an HTML body string to a PDF file using xhtml2pdf."""
     document = (
         "<!DOCTYPE html><html><head><meta charset='utf-8'>"
-        f"<title>{title}</title><style>{_pdf_page_css(page_size)}</style></head>"
+        f"<title>{title}</title><style>{_pdf_page_css(page_size, font_size, margin)}</style></head>"
         f"<body>{html_body}</body></html>"
     )
     with output_path.open("wb") as fh:

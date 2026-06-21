@@ -751,6 +751,74 @@ body {
     color: var(--color-text-muted);
 }
 
+/* Input File Preview Styles */
+.file-details {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 12px;
+}
+
+.file-details-row {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    width: 100%;
+}
+
+.input-preview-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-top: 1px dashed var(--color-border);
+    padding-top: 12px;
+    margin-top: 4px;
+}
+
+.preview-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--color-accent);
+    padding: 4px 0;
+    width: 100%;
+    text-align: left;
+    transition: var(--transition-fast);
+}
+
+.preview-toggle:hover {
+    color: var(--color-accent-deep);
+}
+
+.preview-toggle svg.chevron-icon {
+    width: 14px;
+    height: 14px;
+    transition: transform 0.3s ease;
+}
+
+.input-preview-content {
+    animation: fadeUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.input-preview-content .preview-text-block {
+    font-size: 11px;
+    max-height: 200px;
+    padding: 10px;
+    background: var(--color-canvas-light);
+}
+
+.input-preview-content .preview-image-wrapper {
+    padding: 10px;
+    background: #e6e3dd;
+}
+
 /* ============================================================
    Document Preview Styles
    ============================================================ */
@@ -947,6 +1015,19 @@ body {
 
     .success-actions .btn {
         width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-header h1 {
+        font-size: 1.6rem;
+    }
+    .main-card {
+        padding: 24px 16px;
+    }
+    .preview-iframe {
+        height: auto;
+        min-height: 320px;
     }
 }
 

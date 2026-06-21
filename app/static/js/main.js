@@ -31,6 +31,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const previewContent = document.getElementById("preview-content");
     const previewCloseBtn = document.getElementById("preview-close-btn");
 
+    const inputPreviewContainer = document.getElementById("input-preview-container");
+    const inputPreviewToggle = document.getElementById("input-preview-toggle");
+    const inputPreviewContent = document.getElementById("input-preview-content");
+
     let selectedFile = null;
     let convertedBlob = null;
     let convertedTargetExt = "";
@@ -101,6 +105,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 3. File Selection Action
     function handleFileSelect(file) {
+        if (file.size > 50 * 1024 * 1024) {
+            showError("File is too large. Maximum size allowed is 50 MB.");
+            resetState();
+            return;
+        }
         selectedFile = file;
         
         // Show file details card
@@ -114,6 +123,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Filter and show targets options
         populateTargets(ext);
+
+        // Reset and generate preview
+        if (inputPreviewContainer) inputPreviewContainer.classList.add("hidden");
+        if (inputPreviewContent) {
+            inputPreviewContent.classList.add("hidden");
+            inputPreviewContent.innerHTML = "";
+        }
+        if (inputPreviewToggle) {
+            const toggleSpan = inputPreviewToggle.querySelector("span");
+            if (toggleSpan) toggleSpan.textContent = "Show File Preview";
+            const chevron = inputPreviewToggle.querySelector(".chevron-icon");
+            if (chevron) chevron.style.transform = "rotate(0deg)";
+        }
+        generateInputPreview(file, ext);
     }
 
     // 4. Update Target Output Formats select options
@@ -256,13 +279,32 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => {
+            controller.abort();
+        }, 120000); // 2 minutes
+
+        const loaderDetails = document.getElementById("loader-details");
+        if (loaderDetails) {
+            loaderDetails.textContent = "Applying styles and rendering structure.";
+        }
+
+        const warningTimeoutId = setTimeout(() => {
+            if (loaderDetails) {
+                loaderDetails.textContent = "Taking longer than expected… please wait.";
+            }
+        }, 30000); // 30 seconds
+
         try {
             const response = await fetch("/api/convert", {
                 method: "POST",
-                body: formData
+                body: formData,
+                signal: controller.signal
             });
 
             if (response.ok) {
+                clearTimeout(timeoutId);
+                clearTimeout(warningTimeoutId);
                 const blob = await response.blob();
                 
                 // Store converted info for previewing
@@ -283,12 +325,38 @@ document.addEventListener("DOMContentLoaded", () => {
                 loader.classList.add("hidden");
                 successOverlay.classList.remove("hidden");
             } else {
-                const errJson = await response.json();
-                showError(errJson.detail || "An error occurred during file conversion.");
+                clearTimeout(timeoutId);
+                clearTimeout(warningTimeoutId);
+                let detailMsg = "";
+                try {
+                    const errJson = await response.json();
+                    detailMsg = errJson.detail;
+                    if (typeof detailMsg !== "string" && Array.isArray(detailMsg)) {
+                        detailMsg = detailMsg.map(err => `${err.loc.join('.')}: ${err.msg}`).join(', ');
+                    }
+                } catch (e) {}
+
+                let errMsg = "";
+                if (response.status === 413) {
+                    errMsg = detailMsg || "File is too large. Please upload a file under 50 MB.";
+                } else if (response.status === 422) {
+                    errMsg = detailMsg || "File could not be read. Check that it is a valid file.";
+                } else if (response.status === 503) {
+                    errMsg = detailMsg || "A required system tool is missing on the server.";
+                } else {
+                    errMsg = detailMsg || `Conversion failed (Status Code ${response.status}).`;
+                }
+                showError(errMsg);
                 loader.classList.add("hidden");
             }
         } catch (err) {
-            showError("Network error: Could not complete connection to conversion server.");
+            clearTimeout(timeoutId);
+            clearTimeout(warningTimeoutId);
+            if (err.name === 'AbortError') {
+                showError("Conversion timed out. The server took longer than 2 minutes to respond.");
+            } else {
+                showError("Network error: Could not complete connection to conversion server.");
+            }
             loader.classList.add("hidden");
         }
     });
@@ -304,6 +372,19 @@ document.addEventListener("DOMContentLoaded", () => {
         dynamicOptionsContainer.innerHTML = "";
         targetSelect.innerHTML = '<option value="" disabled selected>Select output format…</option>';
         hideError();
+
+        // Reset input preview state
+        if (inputPreviewContainer) inputPreviewContainer.classList.add("hidden");
+        if (inputPreviewContent) {
+            inputPreviewContent.classList.add("hidden");
+            inputPreviewContent.innerHTML = "";
+        }
+        if (inputPreviewToggle) {
+            const toggleSpan = inputPreviewToggle.querySelector("span");
+            if (toggleSpan) toggleSpan.textContent = "Show File Preview";
+            const chevron = inputPreviewToggle.querySelector(".chevron-icon");
+            if (chevron) chevron.style.transform = "rotate(0deg)";
+        }
 
         // Revoke preview URL and clean up states
         if (convertedUrl) {
@@ -323,6 +404,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     previewBtn.addEventListener("click", showPreview);
     previewCloseBtn.addEventListener("click", closePreview);
+
+    if (inputPreviewToggle) {
+        inputPreviewToggle.addEventListener("click", (e) => {
+            e.stopPropagation(); // prevent triggering dropzone click
+            if (inputPreviewContent) {
+                const isHidden = inputPreviewContent.classList.toggle("hidden");
+                const toggleSpan = inputPreviewToggle.querySelector("span");
+                const chevron = inputPreviewToggle.querySelector(".chevron-icon");
+                if (toggleSpan) toggleSpan.textContent = isHidden ? "Show File Preview" : "Hide File Preview";
+                if (chevron) chevron.style.transform = isHidden ? "rotate(0deg)" : "rotate(180deg)";
+            }
+        });
+    }
 
     function closePreview() {
         previewContainer.classList.add("hidden");
@@ -529,6 +623,56 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     errorToastClose.addEventListener("click", hideError);
+
+    // Escape key listener for error toast dismissal
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+            hideError();
+        }
+    });
+
+    // Generate collapsible preview for selected input file
+    function generateInputPreview(file, ext) {
+        const textFormats = ["md", "txt", "html", "csv", "json"];
+        if (textFormats.includes(ext)) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const snippet = text.slice(0, 500) + (text.length > 500 ? "\n... [truncated]" : "");
+                
+                const pre = document.createElement("pre");
+                pre.className = "preview-text-block";
+                const code = document.createElement("code");
+                code.textContent = snippet;
+                pre.appendChild(code);
+                
+                if (inputPreviewContent) {
+                    inputPreviewContent.appendChild(pre);
+                    if (inputPreviewContainer) inputPreviewContainer.classList.remove("hidden");
+                }
+            };
+            reader.readAsText(file);
+        } else if (ext === "svg") {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dataUrl = e.target.result;
+                const img = document.createElement("img");
+                img.src = dataUrl;
+                img.className = "preview-image";
+                img.style.maxHeight = "200px";
+                
+                const wrapper = document.createElement("div");
+                wrapper.className = "preview-image-wrapper";
+                wrapper.appendChild(img);
+                
+                if (inputPreviewContent) {
+                    inputPreviewContent.appendChild(wrapper);
+                    if (inputPreviewContainer) inputPreviewContainer.classList.remove("hidden");
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    }
 
     // Bytes formatter util
     function formatBytes(bytes, decimals = 1) {

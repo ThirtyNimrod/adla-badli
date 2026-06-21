@@ -4,7 +4,7 @@ SVGs are parsed with svglib into a ReportLab drawing, rasterized with
 renderPM, and finished with Pillow (background compositing, encoding).
 """
 import io
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from pathlib import Path
 from typing import Literal, Tuple
 
@@ -29,6 +29,33 @@ class RasterOptions(BaseModel):
         title="Background Color",
         description="Canvas color composited behind transparent SVG regions.",
     )
+    dpi: int = Field(
+        default=150,
+        title="DPI (Dots Per Inch)",
+        description="Resolution for SVG rasterization.",
+        ge=50,
+        le=600,
+    )
+
+
+class JpgOptions(RasterOptions):
+    quality: int = Field(
+        default=95,
+        title="Image Quality",
+        description="JPEG compression quality (1-100).",
+        ge=1,
+        le=100,
+    )
+
+
+class PngOptions(RasterOptions):
+    compression: int = Field(
+        default=6,
+        title="Compression Level",
+        description="PNG compression level (0-9).",
+        ge=0,
+        le=9,
+    )
 
 
 def load_svg_drawing(input_path: Path):
@@ -39,7 +66,7 @@ def load_svg_drawing(input_path: Path):
     return drawing
 
 
-def render_svg_to_image(input_path: Path, bg_option: BgColor = "white") -> Tuple[Image.Image, Tuple[int, int, int]]:
+def render_svg_to_image(input_path: Path, bg_option: BgColor = "white", dpi: int = 150) -> Tuple[Image.Image, Tuple[int, int, int]]:
     """Rasterizes an SVG onto a solid background canvas.
 
     Returns the composited RGB Pillow image and the background color used.
@@ -52,7 +79,7 @@ def render_svg_to_image(input_path: Path, bg_option: BgColor = "white") -> Tuple
     try:
         drawing = load_svg_drawing(processing_path)
         png_buffer = io.BytesIO()
-        renderPM.drawToFile(drawing, png_buffer, fmt="PNG", bg=bg_int)
+        renderPM.drawToFile(drawing, png_buffer, fmt="PNG", bg=bg_int, dpi=dpi)
         png_buffer.seek(0)
     finally:
         if processing_path != input_path and processing_path.exists():
@@ -87,6 +114,6 @@ def _override_background_rect(input_path: Path, bg_hex: str) -> Path:
                     temp_path = input_path.parent / f"temp_{input_path.name}"
                     tree.write(temp_path, encoding="utf-8", xml_declaration=True)
                     return temp_path
-    except ET.ParseError:
+    except Exception:
         pass
     return input_path

@@ -17,3 +17,18 @@ pillow
 pandas
 openpyxl
 python-docx
+
+# PDF text extraction
+pdfplumber
+
+# Secure XML parsing
+defusedxml
+
+# Dev & Tooling
+ruff
+black
+mypy
+python-multipart
+jinja2
+pandas-stubs
+types-Pillow

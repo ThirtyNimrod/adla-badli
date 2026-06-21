@@ -40,7 +40,7 @@
         <main class="main-card" id="main-card">
             <!-- Dropzone Area -->
             <div class="dropzone" id="file-dropzone" tabindex="0" role="button" aria-label="Upload File">
-                <input type="file" id="file-input" class="file-input" hidden />
+                <input type="file" id="file-input" class="file-input" accept=".md,.txt,.html,.csv,.json,.svg,.xlsx,.docx,.pdf" hidden />
                 <div class="dropzone-content" id="dropzone-prompt">
                     <div class="upload-illustration" id="upload-illustration">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -51,24 +51,36 @@
                     </div>
                     <h2>Drag & drop your file here</h2>
                     <p>or <span class="browse-link" id="browse-link">browse your files</span></p>
-                    <span class="file-limits" id="file-limits">Supports md &middot; txt &middot; html &middot; csv &middot; json &middot; svg</span>
+                    <span class="file-limits" id="file-limits">Supports md &middot; txt &middot; html &middot; csv &middot; json &middot; svg &middot; xlsx &middot; docx &middot; pdf</span>
                 </div>
 
                 <!-- Selected File Display -->
                 <div class="file-details hidden" id="file-details">
-                    <div class="file-icon-wrapper" id="file-icon-wrapper">
-                        <span class="file-badge" id="file-badge-ext">MD</span>
+                    <div class="file-details-row">
+                        <div class="file-icon-wrapper" id="file-icon-wrapper">
+                            <span class="file-badge" id="file-badge-ext">MD</span>
+                        </div>
+                        <div class="file-info">
+                            <h3 id="selected-file-name">document.md</h3>
+                            <p id="selected-file-size">14.2 KB</p>
+                        </div>
+                        <button class="remove-file-btn" id="remove-file-btn" title="Remove file" aria-label="Remove selected file">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
                     </div>
-                    <div class="file-info">
-                        <h3 id="selected-file-name">document.md</h3>
-                        <p id="selected-file-size">14.2 KB</p>
+                    <!-- Collapsible Input File Preview -->
+                    <div class="input-preview-container hidden" id="input-preview-container">
+                        <button type="button" class="preview-toggle" id="input-preview-toggle">
+                            <span>Show File Preview</span>
+                            <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        <div class="input-preview-content hidden" id="input-preview-content"></div>
                     </div>
-                    <button class="remove-file-btn" id="remove-file-btn" title="Remove file" aria-label="Remove selected file">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                    </button>
                 </div>
             </div>
 

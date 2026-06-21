@@ -7,6 +7,10 @@ from app.converters.data_converters.csv_to_xlsx import CsvToXlsxConverter
 from app.converters.data_converters.csv_to_docx import CsvToDocxConverter
 from app.converters.data_converters.csv_to_pdf import CsvToPdfConverter
 from app.converters.data_converters.csv_to_json import CsvToJsonConverter
+from app.converters.data_converters.csv_to_html import CsvToHtmlConverter
+from app.converters.data_converters.json_to_html import JsonToHtmlConverter
+from app.converters.data_converters.xlsx_to_csv import XlsxToCsvConverter
+from app.converters.data_converters.xlsx_to_json import XlsxToJsonConverter
 
 DATA_CONVERTERS = [
     JsonToXlsxConverter,
@@ -17,4 +21,8 @@ DATA_CONVERTERS = [
     CsvToDocxConverter,
     CsvToPdfConverter,
     CsvToJsonConverter,
+    CsvToHtmlConverter,
+    JsonToHtmlConverter,
+    XlsxToCsvConverter,
+    XlsxToJsonConverter,
 ]
