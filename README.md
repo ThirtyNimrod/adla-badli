@@ -56,6 +56,13 @@ uvicorn app.main:app --reload
 .venv\Scripts\python tests/test_workspace.py
 ```
 
+## Interactive API Documentation
+
+Adla-Badli leverages FastAPI to automatically generate interactive API documentation. When the application is running, you can explore the available endpoints, query schemas, validation rules, and test requests directly from your browser:
+
+- **Swagger UI (Interactive)**: Access [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) for an interactive interface where you can trigger file conversion requests and read response types.
+- **ReDoc (Reference)**: Access [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc) for a highly structured, reading-optimized view of the API specification.
+
 ## Contributors & AI Collaborators
 
 Special thanks to my AI pair programming partners who helped design, build, and troubleshoot this suite:

@@ -19,13 +19,23 @@ This guide helps you set up and run the Adla-Badli File Converter Suite.
    source .venv/bin/activate     # macOS / Linux
    ```
 3. Install dependencies:
+   You can install using the Makefile shortcut:
    ```bash
-   pip install -r requirements.txt
+   make install
    ```
-   > `uv` is optional but faster: `pip install uv && uv pip install -r requirements.txt`
+   Or manually:
+   ```bash
+   pip install uv
+   uv pip install -r requirements.txt
+   ```
 
 ## Running the Application
 
+Start the FastAPI application via the Makefile command:
+```bash
+make serve
+```
+Or manually:
 ```bash
 uvicorn app.main:app --reload
 ```
@@ -43,32 +53,23 @@ Open your browser at `http://127.0.0.1:8000`.
 | **json**  | ✅ | ✅ | ✅ | ✅ | — | — | — | — | — |
 | **svg**   | — | ✅ | — | — | — | — | — | ✅ | ✅ |
 
-## Running Tests
+## Development & Verification Commands
 
-### Python Converter Tests
-Generates fixtures for all six source formats and runs every registered converter:
-```bash
-.venv\Scripts\python tests/test_converters.py
-```
+You can run quality checks, unit tests, and E2E browser tests using the Makefile targets:
 
-### Python Workspace Tests
-Validates the temporary file lifecycle (creation, release, cleanup):
-```bash
-.venv\Scripts\python tests/test_workspace.py
-```
-
-### Playwright E2E Tests
-
-Requires Node.js. Install Node dependencies and the Playwright browser binaries, then run the tests (Uvicorn starts automatically before each test run):
-```bash
-# Install dependencies
-npm install
-
-# Install Playwright browser binaries
-npx playwright install
-
-# Run E2E tests
-npm run test:e2e            # headless
-npm run test:e2e:ui         # interactive runner
-npm run test:e2e:debug      # debug mode
-```
+- **Linting & Type Checking**: Runs Black formatter check, Ruff linter check, and Mypy static type checking:
+  ```bash
+  make lint
+  ```
+- **Python Unit Tests**: Runs the converter test suite (including option schema checks, parameterized options validation, and edge case tests) and workspace lifecycle tests:
+  ```bash
+  make test
+  ```
+- **Playwright E2E Browser Tests**: Runs the frontend end-to-end tests (auto-starting the development server):
+  ```bash
+  make e2e
+  ```
+- **Clean Temporary Files & Cache**: Deletes outputs, Pycache files, and Ruff/Mypy directories:
+  ```bash
+  make clean
+  ```

@@ -16,6 +16,8 @@ from reportlab.pdfgen import canvas
 project_root = Path(__file__).resolve().parent.parent
 sys.path.append(str(project_root))
 
+from pydantic import ValidationError
+
 from app.converters import _REGISTRY, get_converter
 from app.converters.text_converters.options import PdfOptions
 from app.converters.image_converters.shared import JpgOptions, PngOptions
@@ -215,6 +217,81 @@ class TestConverters(unittest.TestCase):
                 long_path.unlink()
             if out_html.exists():
                 out_html.unlink()
+
+    def test_parameterized_options_validation(self):
+        """Validate options schemas with valid and invalid values."""
+        # Test cases for PdfOptions
+        pdf_cases = [
+            # (kwargs, should_succeed)
+            ({"page_size": "a4", "font_size": 11, "margin": 2.0}, True),
+            ({"page_size": "letter", "font_size": 6, "margin": 0.5}, True),
+            ({"page_size": "a4", "font_size": 36, "margin": 10.0}, True),
+            ({"page_size": "legal"}, False),  # invalid page_size
+            ({"font_size": 5}, False),        # under ge=6
+            ({"font_size": 37}, False),       # over le=36
+            ({"margin": 0.4}, False),         # under ge=0.5
+            ({"margin": 10.1}, False),        # over le=10.0
+        ]
+        for kwargs, should_succeed in pdf_cases:
+            with self.subTest(model="PdfOptions", kwargs=kwargs):
+                if should_succeed:
+                    opts = PdfOptions(**kwargs)
+                    self.assertEqual(opts.font_size, kwargs.get("font_size", 11))
+                else:
+                    with self.assertRaises(ValidationError):
+                        PdfOptions(**kwargs)
+
+        # Test cases for JpgOptions
+        jpg_cases = [
+            ({"bg_color": "white", "dpi": 150, "quality": 95}, True),
+            ({"bg_color": "dark", "dpi": 50, "quality": 1}, True),
+            ({"bg_color": "black", "dpi": 600, "quality": 100}, True),
+            ({"bg_color": "blue"}, False),    # invalid bg_color
+            ({"dpi": 49}, False),             # under ge=50
+            ({"dpi": 601}, False),            # over le=600
+            ({"quality": 0}, False),          # under ge=1
+            ({"quality": 101}, False),        # over le=100
+        ]
+        for kwargs, should_succeed in jpg_cases:
+            with self.subTest(model="JpgOptions", kwargs=kwargs):
+                if should_succeed:
+                    opts = JpgOptions(**kwargs)
+                    self.assertEqual(opts.quality, kwargs.get("quality", 95))
+                else:
+                    with self.assertRaises(ValidationError):
+                        JpgOptions(**kwargs)
+
+        # Test cases for PngOptions
+        png_cases = [
+            ({"bg_color": "white", "dpi": 150, "compression": 6}, True),
+            ({"bg_color": "dark", "dpi": 50, "compression": 0}, True),
+            ({"bg_color": "black", "dpi": 600, "compression": 9}, True),
+            ({"compression": -1}, False),      # under ge=0
+            ({"compression": 10}, False),      # over le=9
+        ]
+        for kwargs, should_succeed in png_cases:
+            with self.subTest(model="PngOptions", kwargs=kwargs):
+                if should_succeed:
+                    opts = PngOptions(**kwargs)
+                    self.assertEqual(opts.compression, kwargs.get("compression", 6))
+                else:
+                    with self.assertRaises(ValidationError):
+                        PngOptions(**kwargs)
+
+        # Test cases for CsvToJsonOptions
+        json_cases = [
+            ({"orient": "records"}, True),
+            ({"orient": "columns"}, True),
+            ({"orient": "index"}, False),      # invalid orient
+        ]
+        for kwargs, should_succeed in json_cases:
+            with self.subTest(model="CsvToJsonOptions", kwargs=kwargs):
+                if should_succeed:
+                    opts = CsvToJsonOptions(**kwargs)
+                    self.assertEqual(opts.orient, kwargs.get("orient", "records"))
+                else:
+                    with self.assertRaises(ValidationError):
+                        CsvToJsonOptions(**kwargs)
 
 
 if __name__ == "__main__":

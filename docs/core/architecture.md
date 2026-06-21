@@ -120,10 +120,10 @@ Implements the Warm Minimalism / Editorial Elegance design system:
 ## Testing Architecture
 
 ### 1. Python Converter Tests (`tests/test_converters.py`)
-Iterates over every entry in `_REGISTRY`, generates a fixture for the source format, runs the converter, and asserts the output exists and is non-empty. Fixtures are written to `tests/fixtures/` (gitignored); output files land in `tests/output/` (gitignored).
+Iterates over every entry in `_REGISTRY`, generates a fixture for the source format, runs the converter, and asserts the output exists and is non-empty. Fixtures are written to `tests/fixtures/` (no longer gitignored, checked into git to serve as standard test data); output files land in `tests/output/` (gitignored). Includes comprehensive parameterized subtests checking correct boundary handling and validation error raising on invalid option inputs.
 
 ### 2. Python Workspace Tests (`tests/test_workspace.py`)
 Unit tests for the context manager: verifies directory creation, `write_input` streaming, automatic cleanup on `__exit__`, `release()` preventing cleanup, and the deferred `get_cleanup_task()` callback.
 
 ### 3. Playwright E2E Tests (`e2e/`)
-End-to-end tests driving the browser UI directly. Uvicorn is started automatically by Playwright's `globalSetup` before the suite runs.
+End-to-end browser tests in `conversion.spec.ts` (using fixtures from `e2e/test-data/` via path exports in `e2e/fixtures/index.ts`) driving the browser UI directly. Verifies full upload, parameter setting, conversion triggers, downloads, and error toast behaviors. Uvicorn is started automatically by Playwright's config before the suite runs.
