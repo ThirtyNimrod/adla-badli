@@ -8,9 +8,11 @@ jinja2
 pypandoc-binary
 xhtml2pdf
 
-# Image converters (svg)
+# Image converters (svg, webp)
 svglib
 reportlab
+cairosvg
+wand
 pillow
 
 # Data converters (csv, json)

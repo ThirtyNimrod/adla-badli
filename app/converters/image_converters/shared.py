@@ -1,7 +1,9 @@
 """Shared helpers for the image converter group (svg sources).
 
-SVGs are parsed with svglib into a ReportLab drawing, rasterized with
-renderPM, and finished with Pillow (background compositing, encoding).
+For raster targets, SVGs are rasterized to PNG bytes with cairosvg (primary)
+or Wand/ImageMagick (fallback), then finished with Pillow (background
+compositing, encoding). For PDF, svglib parses the SVG into a ReportLab
+drawing that renderPDF emits as vector geometry.
 """
 import io
 import xml.etree.ElementTree as ET
@@ -10,7 +12,6 @@ from typing import Literal, Tuple
 
 from PIL import Image
 from pydantic import BaseModel, Field
-from reportlab.graphics import renderPM
 from svglib.svglib import svg2rlg
 
 BgColor = Literal["white", "dark", "black"]
@@ -32,7 +33,7 @@ class RasterOptions(BaseModel):
 
 
 def load_svg_drawing(input_path: Path):
-    """Parses an SVG file into a ReportLab drawing, raising on failure."""
+    """Parses an SVG file into a ReportLab drawing for vector output (PDF)."""
     drawing = svg2rlg(str(input_path))
     if drawing is None:
         raise ValueError(f"Failed to parse SVG structure from file: {input_path}")
@@ -50,10 +51,7 @@ def render_svg_to_image(input_path: Path, bg_option: BgColor = "white") -> Tuple
 
     processing_path = _override_background_rect(input_path, bg_hex)
     try:
-        drawing = load_svg_drawing(processing_path)
-        png_buffer = io.BytesIO()
-        renderPM.drawToFile(drawing, png_buffer, fmt="PNG", bg=bg_int)
-        png_buffer.seek(0)
+        png_bytes = _svg_to_png_bytes(processing_path)
     finally:
         if processing_path != input_path and processing_path.exists():
             try:
@@ -61,13 +59,38 @@ def render_svg_to_image(input_path: Path, bg_option: BgColor = "white") -> Tuple
             except OSError:
                 pass
 
-    png_image = Image.open(png_buffer)
+    png_image = Image.open(io.BytesIO(png_bytes))
     canvas = Image.new("RGB", png_image.size, bg_rgb)
     if png_image.mode == "RGBA":
         canvas.paste(png_image, mask=png_image.split()[3])
     else:
         canvas.paste(png_image)
     return canvas, bg_rgb
+
+
+def _svg_to_png_bytes(svg_path: Path) -> bytes:
+    """Rasterizes an SVG file to PNG bytes.
+
+    Uses cairosvg when available, falling back to Wand (ImageMagick). The PNG
+    is rendered with transparency so the caller can composite it onto a solid
+    background of its choosing.
+    """
+    try:
+        import cairosvg
+
+        return cairosvg.svg2png(url=str(svg_path))
+    except Exception as cairo_exc:
+        try:
+            from wand.image import Image as WandImage
+        except ImportError as wand_exc:
+            raise RuntimeError(
+                "SVG rasterization requires either cairosvg or Wand (ImageMagick). "
+                f"cairosvg failed ({cairo_exc}); Wand is not installed ({wand_exc})."
+            ) from cairo_exc
+
+        with WandImage(filename=str(svg_path)) as wand_img:
+            wand_img.format = "png"
+            return wand_img.make_blob()
 
 
 def _override_background_rect(input_path: Path, bg_hex: str) -> Path:

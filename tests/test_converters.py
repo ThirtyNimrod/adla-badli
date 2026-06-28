@@ -88,7 +88,21 @@ def write_fixtures() -> dict:
         path = FIXTURES_DIR / filename
         path.write_text(content, encoding="utf-8")
         paths[ext] = path
+    paths["webp"] = write_webp_fixture()
     return paths
+
+
+def write_webp_fixture() -> Path:
+    """WebP is binary, so render a small sample with Pillow at fixture time."""
+    from PIL import Image, ImageDraw
+
+    img = Image.new("RGB", (200, 100), (250, 247, 242))
+    draw = ImageDraw.Draw(img)
+    draw.ellipse([25, 15, 95, 85], fill=(196, 113, 74))
+    draw.rectangle([110, 20, 170, 80], fill=(46, 32, 24))
+    path = FIXTURES_DIR / "sample.webp"
+    img.save(path, "WEBP")
+    return path
 
 
 def run_all() -> int:
