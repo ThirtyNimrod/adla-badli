@@ -2,6 +2,13 @@
 
 Welcome to the documentation for the Adla-Badli File Converter Suite.
 
+## Features & Capabilities
+
+- **23 Conversion Paths**: Bridges Markdown, Plain Text, HTML, CSV, JSON, SVG, and WebP sources with DOCX, PDF, XLSX, CSV, JSON, HTML, TXT, JPG, and PNG targets.
+- **Interactive File Previewer**: Instant inline preview rendering for images, PDFs, sandboxed HTML docs, pretty-printed JSON, text files, and CSV tables, plus stylized placeholders for Word and Excel targets.
+- **Dynamic Configuration**: Form fields are dynamically populated using Pydantic option schemas.
+- **Isolated Workspace**: Transparent UUID-isolated directory lifecycle with deferred background tasks for file cleanup.
+
 ## Core Documentation
 
 - **[Quick Start Guide](core/quick_start.md)**: Steps to set up your local virtual environment, install Python and Node.js dependencies, install Playwright browsers, and start the development server.

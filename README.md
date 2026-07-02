@@ -1,8 +1,8 @@
 # Adla-Badli File Converter Suite
 
-FastAPI-powered universal file converter: bridges AI-friendly formats (md, txt, html, csv, json, svg) with human-friendly ones (docx, pdf, xlsx, html, jpg, png).
+FastAPI-powered universal file converter: bridges AI-friendly formats (md, txt, html, csv, json, svg, webp) with human-friendly ones (docx, pdf, xlsx, html, jpg, png).
 
-## Conversion Matrix (21 paths)
+## Conversion Matrix (23 paths)
 
 | From \ To | DOCX | PDF | XLSX | CSV | JSON | HTML | TXT | JPG | PNG |
 |-----------|:----:|:---:|:----:|:---:|:----:|:----:|:---:|:---:|:---:|
@@ -12,12 +12,26 @@ FastAPI-powered universal file converter: bridges AI-friendly formats (md, txt, 
 | **csv**   | ✅ | ✅ | ✅ | — | ✅ | — | — | — | — |
 | **json**  | ✅ | ✅ | ✅ | ✅ | — | — | — | — | — |
 | **svg**   | — | ✅ | — | — | — | — | — | ✅ | ✅ |
+| **webp**  | — | — | — | — | — | — | — | ✅ | ✅ |
 
 Converters are organized into three groups under `app/converters/`:
 
 - `text_converters/` — Pandoc-driven document conversion; PDFs rendered with xhtml2pdf
 - `data_converters/` — pandas normalization rendered via openpyxl, python-docx, and ReportLab
-- `image_converters/` — svglib rasterization (Pillow finishing) and vector-preserving PDF export
+- `image_converters/` — SVG and WebP processing (Pillow rasterization, svglib vector-preserving PDF export)
+
+## Key Features
+
+- **23 Conversion Paths**: Supports bridging Markdown, plain text, HTML, CSV, JSON, SVG, and WebP files to DOCX, PDF, XLSX, CSV, JSON, HTML, TXT, JPG, and PNG.
+- **100% Private & Local**: Zero cloud dependencies or telemetry; runs entirely on localhost.
+- **Self-Documenting Pydantic Schema**: Dynamic option fields (e.g. PDF page size, JSON structure, image background color) are auto-generated from Pydantic schemas.
+- **Interactive File Previewer**: Instant inline previewing of converted results directly in the browser:
+  - **Images (PNG, JPG, SVG)**: Displayed within a styled viewer.
+  - **PDF & HTML**: Structured layout rendering in a sandboxed iframe.
+  - **CSV**: Renders a dynamic, paginated preview table (first 10 rows).
+  - **JSON & TXT**: Formatted plain text codeblocks (JSON is pretty-printed).
+  - **DOCX & XLSX**: Styled placeholder fallback reminding the user to download.
+- **Workspace Lifecycle Management**: Clean, UUID-isolated conversion workspaces with deferred background cleanup tasks to prevent file accumulation.
 
 ## Documentation
 
